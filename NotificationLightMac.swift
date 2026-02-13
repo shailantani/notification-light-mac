@@ -5,10 +5,47 @@ import Cocoa
 import ApplicationServices
 import CoreImage
 
+class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        NSWindow.allowsAutomaticWindowTabbing = false
+    }
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            AppSelectionManager.shared.handleDeepLink(url)
+        }
+        enforceSingleWindow()
+    }
+    
+    private func enforceSingleWindow() {
+        // Keep the main window (key window or first window) and close others
+        let windows = NSApplication.shared.windows
+        guard windows.count > 1 else { return }
+        
+        // Prefer the key window, or the first one if none are key
+        let keepWindow = NSApplication.shared.keyWindow ?? windows.first
+        
+        for window in windows {
+            if window !== keepWindow {
+                window.close()
+            }
+        }
+        
+        keepWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if let window = sender.windows.first {
+            window.makeKeyAndOrderFront(nil)
+        }
+        return true
+    }
+}
+
 @main
 struct NotificationLightMacApp: App {
-
-    @StateObject private var appSelectionManager = AppSelectionManager()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var appSelectionManager = AppSelectionManager.shared
     
     var body: some Scene {
         WindowGroup {
@@ -16,6 +53,9 @@ struct NotificationLightMacApp: App {
                 .environmentObject(appSelectionManager) // Inject into environment
         }
         .windowStyle(HiddenTitleBarWindowStyle())
+        .commands {
+            CommandGroup(replacing: .newItem) { }
+        }
     }
 }
 
@@ -75,6 +115,10 @@ struct WatchedApp: Identifiable, Codable, Hashable {
 // MARK: - App Selection Manager
 
 class AppSelectionManager: ObservableObject {
+    static let shared = AppSelectionManager()
+    
+    @Published var showSettings: Bool = false
+    
     @Published var watchedApps: [WatchedApp] = [] {
         didSet {
             saveApps()
@@ -116,7 +160,7 @@ class AppSelectionManager: ObservableObject {
     private var notificationWatcher: NotificationWatcher?
     private var workspaceObserver: NSObjectProtocol?
     
-    init() {
+    private init() {
         loadApps()
         // Load Settings
         showDebugLogs = UserDefaults.standard.object(forKey: "ShowDebugLogs") as? Bool ?? true
@@ -155,6 +199,22 @@ class AppSelectionManager: ObservableObject {
         }
     }
     
+    // MARK: - Deep Linking
+    
+    func handleDeepLink(_ url: URL) {
+        guard url.scheme == "notilight" else { return }
+        switch url.host {
+        case "start": isMonitoring = true
+        case "stop": isMonitoring = false
+        case "toggle": isMonitoring.toggle()
+        case "clear": activeAppIDs.removeAll()
+        case "test": CameraManager.shared.toggleCamera()
+        case "settings": showSettings = true
+        case "add": addApp()
+        default: break
+        }
+    }
+
     // MARK: - App Management
     
     func addApp() {
@@ -583,7 +643,7 @@ struct AppCardView: View {
 struct ContentView: View {
     @EnvironmentObject var appManager: AppSelectionManager
     @StateObject private var cameraManager = CameraManager.shared
-    @State private var showSettings = false
+    // showSettings moved to appManager
     @State private var showHelp = false
 
     
@@ -625,14 +685,14 @@ struct ContentView: View {
                     )
                 }
                 
-                Button(action: { showSettings = true }) {
+                Button(action: { appManager.showSettings = true }) {
                     Image(systemName: "gear")
                         .font(.title2)
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(PlainButtonStyle())
                 .keyboardShortcut(",", modifiers: .command)
-                .sheet(isPresented: $showSettings) {
+                .sheet(isPresented: $appManager.showSettings) {
                     SettingsView()
                 }
             }
@@ -765,30 +825,5 @@ struct ContentView: View {
                 // but HiddenTitleBarWindowStyle likely adds it anyway.
             }
         })
-        .onOpenURL(perform: handleDeepLink)
-    }
-
-    
-    func handleDeepLink(_ url: URL) {
-        guard url.scheme == "notilight" else { return }
-        
-        switch url.host {
-        case "start":
-            appManager.isMonitoring = true
-        case "stop":
-            appManager.isMonitoring = false
-        case "toggle":
-            appManager.isMonitoring.toggle()
-        case "clear":
-            appManager.activeAppIDs.removeAll()
-        case "test":
-            cameraManager.toggleCamera()
-        case "settings":
-            showSettings = true
-        case "add":
-            appManager.addApp()
-        default:
-            print("Unknown deep link: \(url)")
-        }
     }
 }
