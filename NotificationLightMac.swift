@@ -584,6 +584,8 @@ struct ContentView: View {
     @EnvironmentObject var appManager: AppSelectionManager
     @StateObject private var cameraManager = CameraManager.shared
     @State private var showSettings = false
+    @State private var showHelp = false
+
     
     let columns = [
         GridItem(.adaptive(minimum: 120))
@@ -607,6 +609,21 @@ struct ContentView: View {
                     .toggleStyle(SwitchToggleStyle(tint: .green))
                     .disabled(!appManager.accessibilityPermissionGranted)
                     .padding(.trailing, 10)
+                
+                Button(action: { showHelp = true }) {
+                    Image(systemName: "info.circle")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.trailing, 8)
+                .alert(isPresented: $showHelp) {
+                    Alert(
+                        title: Text("How to Stop the Light"),
+                        message: Text("To turn the light OFF, simply open (focus) the app that sent the notification.\n\nAlternatively, click the App Card in the grid to manually clear it.\n\nClick 'Clear All' at the bottom to reset everything."),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
                 
                 Button(action: { showSettings = true }) {
                     Image(systemName: "gear")
