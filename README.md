@@ -34,5 +34,5 @@ https://x.com/Youkhna/status/2019904966937440264
 
 ## License
 
-Droppy is source-available under [GPL-3.0 with Commons Clause](LICENSE).
+NotiLight is source-available under [GPL-3.0 with Commons Clause](LICENSE).
 This license is not OSI open source and restricts selling the software.
