@@ -1,15 +1,5 @@
-# Camera Light App
-
-## macOS Version
-App: `CameraLight.app` (in this folder)
-
-### Files
-- `NotificationLightMac.swift`: Main application logic (Mac).
-- `build_app.sh`: Script to compile and bundle the app.
-
-### Features
-- **Manual Toggle**: Click the camera button to toggle the green light.
-- **Notification Monitoring**: The green light flashes when a selected app sends a notification.
+# Notification Light App
+A simple app that turns on the Camera Indicator light to show any important notifications that you dont want to miss!
 
 ### Setup Instructions
 1.  **Run the App**:
@@ -26,7 +16,4 @@ App: `CameraLight.app` (in this folder)
 ### Troubleshooting
 - If the Accessibility permission seems "stuck" (you granted it but the app says otherwise), try removing the app from the Accessibility list in System Settings and adding it again, or restart the app.
 - Ensure "Allow Notifications" is ON for the apps you are watching in System Settings > Notifications. The banner must appear for the app to detect it.
-
-## iOS Version
-File: `CameraLightApp.swift`
-- Handles toggling the Torch/Flash on iPhone.
+- To test out if the app is working correctly, you can turn on debug logs from settings.
