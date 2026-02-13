@@ -31,3 +31,8 @@ A simple app that turns on the Camera Indicator light to show any important noti
 
 Inspied by this tweet:
 https://x.com/Youkhna/status/2019904966937440264
+
+## License
+
+Droppy is source-available under [GPL-3.0 with Commons Clause](LICENSE).
+This license is not OSI open source and restricts selling the software.
