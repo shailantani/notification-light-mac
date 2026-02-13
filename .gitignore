@@ -1,8 +1,8 @@
 .DS_Store
-CameraLight.app
 *.o
 *.swiftmodule
 *.swiftdoc
 *.swiftinterface
 *.dmg
 *.app
+create_dmg.sh
