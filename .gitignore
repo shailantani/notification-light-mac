@@ -1,0 +1,6 @@
+.DS_Store
+CameraLight.app
+*.o
+*.swiftmodule
+*.swiftdoc
+*.swiftinterface
